@@ -184,21 +184,28 @@ int emailResp()
 
 void connectToWifi()
 {
-  delay(10);
-  Serial.println(ssid);
-  WiFi.begin(ssid, networkPassword);
-
-  while (WiFi.status() != WL_CONNECTED)
+  // attempt a connection at least 5 times
+  for (uint8_t attempts = 0; attempts <= 5; attempts++)
   {
-    delay(500);
+    WiFi.begin(ssid, networkPassword);
+    for (uint8_t i = 0; i <= 20; i++)
+    {
+      delay(500);
+      // wait for connection to be established
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        // break both loops
+        i = 100;
+        attempts = 100;
+      }
+    }
+    delay(1500);
   }
-  Serial.println(WiFi.localIP());
 }
 
 void disconnectFromWifi()
 {
   WiFi.disconnect();
-  Serial.println(WiFi.status());
 }
 
 int sendAlarmEmail()
