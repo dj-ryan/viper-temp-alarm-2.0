@@ -77,7 +77,7 @@ void ICACHE_RAM_ATTR isr()
 void connectToWifi();
 int emailResp();
 int sendAlarmEmail();
-void getCurrentTime();
+String getCurrentTime();
 void disconnectFromWifi();
 
 void setup()
@@ -276,6 +276,8 @@ int sendAlarmEmail()
   espClient.println("To: " + email.recipient);
   // change to your address
   espClient.println("From: " + email.sender);
+  String currentTime = getCurrentTime();
+  String subject = "Subject: Viper Alarm Triggered at: " + currentTime + "\r\n";
   espClient.println("Subject: ESP8266 test e-mail\r\n");
   espClient.println("This is is a test e-mail sent from ESP8266.\n");
   espClient.println("Second line of the test e-mail.");
@@ -295,10 +297,9 @@ int sendAlarmEmail()
   return 1;
 }
 
-void getCurrentTime() {
+String getCurrentTime() {
   WiFiUDP ntpUDP;
   NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
 
   timeClient.begin();
 
@@ -311,6 +312,10 @@ void getCurrentTime() {
   Serial.print(timeClient.getMinutes());
   Serial.print(":");
   Serial.println(timeClient.getSeconds());
+
+return daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+ 
+
 }
 
 
