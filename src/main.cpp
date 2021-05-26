@@ -85,7 +85,6 @@ void setup()
   Serial.begin(9600);
   Serial.println("begginging setup...");
 
-
   pinMode(alarmReset.PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
 
@@ -102,7 +101,6 @@ void setup()
   disconnectFromWifi();
 
   Serial.println("setup compleated");
-  
 }
 
 void loop()
@@ -115,6 +113,12 @@ void loop()
   {
 
     alarmActive = true;
+
+    connectToWifi(); // establish network connection
+
+    sendAlarmEmail(); // send formated email with current time
+
+    disconnectFromWifi(); // disconnect from network
 
     // blink light wait for isr
     while (alarmActive == true)
@@ -194,6 +198,7 @@ void connectToWifi()
 void disconnectFromWifi()
 {
   WiFi.disconnect();
+  Serial.println(WiFi.status());
 }
 
 int sendAlarmEmail()
@@ -212,7 +217,7 @@ int sendAlarmEmail()
   }
   if (!emailResp())
     return 0;
-  
+
   espClient.println("EHLO www.example.com");
   if (!emailResp())
     return 0;
@@ -223,7 +228,7 @@ int sendAlarmEmail()
   if (!emailResp()) 
   return 0;
   */
-  
+
   espClient.println("AUTH LOGIN");
   if (!emailResp())
     return 0;
@@ -251,8 +256,6 @@ int sendAlarmEmail()
   if (!emailResp())
     return 0;
 
-
-
   // email content
   espClient.println("To: " + email.recipient);
   espClient.println("From: " + email.sender);
@@ -261,30 +264,23 @@ int sendAlarmEmail()
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
-  espClient.println("");
-  espClient.println("  _   _________  _______    ____________  ______    ___   __   ___   ___  __  ___");
-  espClient.println(" | | / /  _/ _ \/ __/ _ \  /_  __/ __/  |/  / _ \  / _ | / /  / _ | / _ \/  |/  /");
-  espClient.println(" | |/ // // ___/ _// , _/   / / / _// /|_/ / ___/ / __ |/ /__/ __ |/ , _/ /|_/ / ");
-  espClient.println(" |___/___/_/  /___/_/|_|   /_/ /___/_/  /_/_/    /_/ |_/____/_/ |_/_/|_/_/  /_/ ");
-  espClient.println("");
-  espClient.println("       \"Keeping your stuff cool, since 2019\"");
+  espClient.println("Triggerd at: " + currentTime);
+  // espClient.println("");
+  // espClient.println("  _   _________  _______    ____________  ______    ___   __   ___   ___  __  ___");
+  // espClient.println(" | | / /  _/ _ \\/ __/ _ \\  /_  __/ __/  |/  / _ \\  / _ | / /  / _ | / _ \\/  |/  /");
+  // espClient.println(" | |/ // // ___/ _// , _/   / / / _// /|_/ / ___/ / __ |/ /__/ __ |/ , _/ /|_/ / ");
+  // espClient.println(" |___/___/_/  /___/_/|_|   /_/ /___/_/  /_/_/    /_/ |_/____/_/ |_/_/|_/_/  /_/ ");
+  // espClient.println("");
+  // espClient.println("       \"Keeping your stuff cool, since 2019\"");
 
-
-
-
-
-
-
-
-  
   espClient.println(".");
   if (!emailResp())
     return 0;
-  
+
   espClient.println("QUIT");
   if (!emailResp())
     return 0;
-  
+
   espClient.stop();
   return 1;
 }
