@@ -278,10 +278,10 @@ int sendAlarmEmail()
   espClient.println("From: " + email.sender);
   String currentTime = getCurrentTime();
   String subject = "Subject: Viper Alarm Triggered at: " + currentTime + "\r\n";
-  espClient.println("Subject: ESP8266 test e-mail\r\n");
-  espClient.println("This is is a test e-mail sent from ESP8266.\n");
-  espClient.println("Second line of the test e-mail.");
-  espClient.println("Third line of the test e-mail.");
+  //spClient.println("Subject: ESP8266 test e-mail\r\n");
+  espClient.println(subject);
+  espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
+  espClient.println("A data dump is required from the inventory temperature monitoring system");
   //
   espClient.println(".");
   if (!emailResp())
