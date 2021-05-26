@@ -1,3 +1,23 @@
+// Ownership: Virtual Incision Corp
+// Last Modified: 5/26/2021
+// Author: David Ryan
+//   E: davidryn6@gmail.com
+//   C: (402)-499-8715
+// ++Virtual Incision Permanent Temperature Alarm++
+
+// OM-THA2-U Temperature/Humidity/Dewpoint Alarm's (120-000060-000) NO (normally open) relay output 
+// is connected to a INPUT pin on the WeMos D1 Mini ESP8266 chip. When tripped the program will send
+// an email and blink it's LED
+
+
+
+
+
+
+
+
+
+
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
@@ -86,6 +106,7 @@ void setup()
   Serial.println("begginging setup...");
 
   pinMode(alarmReset.PIN, INPUT_PULLUP);
+
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
 
   pinMode(alarmTrigger.PIN, INPUT_PULLUP);
@@ -267,11 +288,11 @@ int sendAlarmEmail()
   espClient.println("To: " + email.recipient);
   espClient.println("From: " + email.sender);
   String currentTime = getCurrentTime();
-  String subject = "Subject: Viper Alarm Triggered at: " + currentTime + "\r\n";
+  String subject = "Subject: Viper Alarm Triggered on " + currentTime + "\r\n";
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
-  espClient.println("Triggerd at: " + currentTime);
+  espClient.println("Triggered at: " + currentTime);
   // espClient.println("");
   // espClient.println("  _   _________  _______    ____________  ______    ___   __   ___   ___  __  ___");
   // espClient.println(" | | / /  _/ _ \\/ __/ _ \\  /_  __/ __/  |/  / _ \\  / _ | / /  / _ | / _ \\/  |/  /");
@@ -299,9 +320,10 @@ String getCurrentTime()
 
   timeClient.begin();
 
-  //String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  timeClient.update();
 
-  String currentTime = timeClient.getFormattedTime();
+  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+
 
   timeClient.end();
 
