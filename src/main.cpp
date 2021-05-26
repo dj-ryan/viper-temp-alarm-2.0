@@ -197,15 +197,18 @@ void setup() {
   
   Serial.begin(9600);
 
-  connectToWifi();
+  Serial.println("Beginning...");
 
-  sendAlarmEmail();
+  //connectToWifi();
+
+  //sendAlarmEmail();
 
 }
 
 void loop() {
 
-
+  delay(1000);
+  Serial.println("checking...");
   if(digitalRead(alarmTrigger.PIN) == HIGH) {
     
     alarmActive = true;
@@ -217,6 +220,7 @@ void loop() {
       while(alarmActive == true) {
         // D1-mini chip io pins can draw more then they can 
         // output so inverted wiring in order to make led brighter
+        Serial.println("blinking...");
         digitalWrite(ledPin, LOW);  // turn LED ON
         delay(500);
         digitalWrite(ledPin, HIGH);  // turn LED OFF
