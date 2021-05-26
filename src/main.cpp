@@ -240,7 +240,7 @@ void setup() {
 
   Serial.println("connection to wifi successfull");
 
-  //sendAlarmEmail();
+  sendAlarmEmail();
 
 }
 
