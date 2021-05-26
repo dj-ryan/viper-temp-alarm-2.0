@@ -8,7 +8,7 @@
 
 const long utcOffsetInSeconds = -21600; // utc offset
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+String daysOfTheWeek[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 // network info
 const String ssid = "VirtualIncision-Internal";
@@ -18,7 +18,7 @@ const String networkPassword = "R0b0tsCutY0u";
 const String recipientEmail = "vipermtempalarm@gmail.com";
 const String recipientEmailPassword = "";
 
-// email sender account info
+// smtp account info
 const String smtpUserName = "vipermtempalarmsender@gmail.com";
 const String smtpPassword = "PNiXugnd0cYt";
 
@@ -78,6 +78,7 @@ void connectToWifi();
 int emailResp();
 int sendAlarmEmail();
 void getCurrentTime();
+void disconnectFromWifi();
 
 void setup()
 {
@@ -100,6 +101,8 @@ void setup()
   sendAlarmEmail();
 
   getCurrentTime();
+
+  disconnectFromWifi();
 
 }
 
@@ -158,7 +161,7 @@ int emailResp()
     if (loopCount > 20000) // Wait for 20 seconds and if nothing is received, stop.
     {
       espClient.stop();
-      Serial.println(F("\r\nTimeout"));
+      Serial.println("\r\nTimeout");
       return 0;
     }
   }
@@ -198,6 +201,11 @@ void connectToWifi()
   Serial.println(WiFi.localIP());
 }
 
+void disconnectFromWifi() {
+  Serial.println("disconnecting from wifi");
+  WiFi.disconnect();
+}
+
 int sendAlarmEmail()
 {
 
@@ -205,22 +213,22 @@ int sendAlarmEmail()
 
   if (espClient.connect(server, 2525) == 1)
   {
-    Serial.println(F("connected"));
+    Serial.println("connected");
   }
   else
   {
-    Serial.println(F("connection failed"));
+    Serial.println("connection failed");
     return 0;
   }
   if (!emailResp())
     return 0;
   //
-  Serial.println(F("Sending EHLO"));
+  Serial.println("Sending EHLO");
   espClient.println("EHLO www.example.com");
   if (!emailResp())
     return 0;
   // only use if STARTTLS seccurity is used
-  /*Serial.println(F("Sending TTLS"));
+  /*Serial.println("Sending TTLS");
   espClient.println("STARTTLS");
   if (!emailResp()) 
   return 0;*/
@@ -263,27 +271,27 @@ int sendAlarmEmail()
   if (!emailResp())
     return 0;
 
-  Serial.println(F("Sending email"));
+  Serial.println("Sending email");
   // change to recipient address
   espClient.println("To: " + email.recipient);
   // change to your address
   espClient.println("From: " + email.sender);
-  espClient.println(F("Subject: ESP8266 test e-mail\r\n"));
-  espClient.println(F("This is is a test e-mail sent from ESP8266.\n"));
-  espClient.println(F("Second line of the test e-mail."));
-  espClient.println(F("Third line of the test e-mail."));
+  espClient.println("Subject: ESP8266 test e-mail\r\n");
+  espClient.println("This is is a test e-mail sent from ESP8266.\n");
+  espClient.println("Second line of the test e-mail.");
+  espClient.println("Third line of the test e-mail.");
   //
-  espClient.println(F("."));
+  espClient.println(".");
   if (!emailResp())
     return 0;
   //
-  Serial.println(F("Sending QUIT"));
-  espClient.println(F("QUIT"));
+  Serial.println("Sending QUIT");
+  espClient.println("QUIT");
   if (!emailResp())
     return 0;
   //
   espClient.stop();
-  Serial.println(F("disconnected"));
+  Serial.println("disconnected");
   return 1;
 }
 
