@@ -5,7 +5,6 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-
 const long utcOffsetInSeconds = -21600; // utc offset
 
 String daysOfTheWeek[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -84,8 +83,8 @@ void setup()
 {
 
   Serial.begin(9600);
+  Serial.println("begginging setup...");
 
-  Serial.println("Beginning...");
 
   pinMode(alarmReset.PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
@@ -96,21 +95,21 @@ void setup()
 
   connectToWifi();
 
-  Serial.println("connection to wifi successfull");
-
   sendAlarmEmail();
 
   getCurrentTime();
 
   disconnectFromWifi();
 
+  Serial.println("setup compleated");
+  
 }
 
 void loop()
 {
 
-  delay(1000);
   Serial.println("checking...");
+  delay(1000);
 
   if (digitalRead(alarmTrigger.PIN) == LOW)
   {
@@ -161,7 +160,6 @@ int emailResp()
     if (loopCount > 20000) // Wait for 20 seconds and if nothing is received, stop.
     {
       espClient.stop();
-      Serial.println("\r\nTimeout");
       return 0;
     }
   }
@@ -175,7 +173,6 @@ int emailResp()
 
   if (responseCode >= '4')
   {
-    //  efail();
     return 0;
   }
   return 1;
@@ -184,25 +181,18 @@ int emailResp()
 void connectToWifi()
 {
   delay(10);
-  Serial.println("");
-  Serial.println("");
-  Serial.print("Connecting To: ");
   Serial.println(ssid);
   WiFi.begin(ssid, networkPassword);
 
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    Serial.print(".");
   }
-  Serial.println("");
-  Serial.println("WiFi Connected.");
-  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 }
 
-void disconnectFromWifi() {
-  Serial.println("disconnecting from wifi");
+void disconnectFromWifi()
+{
   WiFi.disconnect();
 }
 
@@ -213,91 +203,94 @@ int sendAlarmEmail()
 
   if (espClient.connect(server, 2525) == 1)
   {
-    Serial.println("connected");
+    //Serial.println("connected");
   }
   else
   {
-    Serial.println("connection failed");
+    //Serial.println("connection failed");
     return 0;
   }
   if (!emailResp())
     return 0;
-  //
-  Serial.println("Sending EHLO");
+  
   espClient.println("EHLO www.example.com");
   if (!emailResp())
     return 0;
+
   // only use if STARTTLS seccurity is used
-  /*Serial.println("Sending TTLS");
+  /*
   espClient.println("STARTTLS");
   if (!emailResp()) 
-  return 0;*/
-  //
-  Serial.println("Sending auth login");
+  return 0;
+  */
+  
   espClient.println("AUTH LOGIN");
   if (!emailResp())
     return 0;
-  //
-  Serial.println("Sending User");
 
   espClient.println(base64::encode(email.smtpUserName)); //base64, ASCII encoded Username
   if (!emailResp())
     return 0;
-  //
-  Serial.println("Sending Password");
-  // change to your base64, ASCII encoded password
-  /*
-  For example, if your password is "testpassword" (excluding the quotes),
-  it would be encoded as dGVzdHBhc3N3b3Jk
-  */
+
   espClient.println(base64::encode(email.smtpPassword)); //base64, ASCII encoded Password
   if (!emailResp())
     return 0;
 
   String from = "MAIL From: " + email.sender;
-  Serial.println(from);
   espClient.println(from);
   if (!emailResp())
     return 0;
 
   String to = "RCPT To: " + email.recipient;
-  Serial.println(to);
   espClient.println(to);
   if (!emailResp())
     return 0;
 
-  Serial.println("Sending DATA");
+  // sending data
   espClient.println("DATA");
   if (!emailResp())
     return 0;
 
-  Serial.println("Sending email");
-  // change to recipient address
+
+
+  // email content
   espClient.println("To: " + email.recipient);
-  // change to your address
   espClient.println("From: " + email.sender);
   String currentTime = getCurrentTime();
   String subject = "Subject: Viper Alarm Triggered at: " + currentTime + "\r\n";
-  //spClient.println("Subject: ESP8266 test e-mail\r\n");
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
-  espClient.println("A data dump is required from the inventory temperature monitoring system");
-  //
+  espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
+  espClient.println("");
+  espClient.println("  _   _________  _______    ____________  ______    ___   __   ___   ___  __  ___");
+  espClient.println(" | | / /  _/ _ \/ __/ _ \  /_  __/ __/  |/  / _ \  / _ | / /  / _ | / _ \/  |/  /");
+  espClient.println(" | |/ // // ___/ _// , _/   / / / _// /|_/ / ___/ / __ |/ /__/ __ |/ , _/ /|_/ / ");
+  espClient.println(" |___/___/_/  /___/_/|_|   /_/ /___/_/  /_/_/    /_/ |_/____/_/ |_/_/|_/_/  /_/ ");
+  espClient.println("");
+  espClient.println("       \"Keeping your stuff cool, since 2019\"");
+
+
+
+
+
+
+
+
+  
   espClient.println(".");
   if (!emailResp())
     return 0;
-  //
-  Serial.println("Sending QUIT");
+  
   espClient.println("QUIT");
   if (!emailResp())
     return 0;
-  //
+  
   espClient.stop();
-  Serial.println("disconnected");
   return 1;
 }
 
-String getCurrentTime() {
+String getCurrentTime()
+{
   WiFiUDP ntpUDP;
   NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
@@ -305,19 +298,7 @@ String getCurrentTime() {
 
   timeClient.update();
 
-  Serial.print(daysOfTheWeek[timeClient.getDay()]);
-  Serial.print(", ");
-  Serial.print(timeClient.getHours());
-  Serial.print(":");
-  Serial.print(timeClient.getMinutes());
-  Serial.print(":");
-  Serial.println(timeClient.getSeconds());
-
-return daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
- 
-
+  return daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
 }
-
-
 
 // -eof
