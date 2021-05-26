@@ -3,13 +3,40 @@
 #include <ESP8266WiFi.h>
 #include <base64.h>
 
-const String ssid = "VirtualIncision-Internal"; // Enter the SSID of your WiFi Network.
-const String password = "R0b0tsCutY0u";// Enter the Password of your WiFi Network.
-char server[] = "mail.smtp2go.com"; // The SMTP Server 
+// network info
+const String ssid = "VirtualIncision-Internal";
+const String networkPassword = "R0b0tsCutY0u";
+
+// email recipient account info
+const String recipientEmail = "vipermtempalarm@gmail.com";
+const String recipientEmailPassword = "";
+
+const String smtpUserName = "vipermtempalarmsender@gmail.com";
+const String smtpPassword = "PNiXugnd0cYt";
+
+
+// email sender account info
+const String senderEmail = "vipermtempalarmsender@gmail.com";
+const String senderEmailPassword = "XXaJQnV2t3utL7bu";
+
+String server = "mail.smtp2go.com"; // The SMTP Server 
 
 struct Button {
   uint8_t PIN;
   bool pressed;
+};
+
+struct Email {
+  String smtpUserName;
+  String smtpPassword;
+  String sender;
+  String senderPassword;
+  String recipient;
+
+
+
+
+
 };
 
 bool alarmActive = false;
@@ -76,7 +103,7 @@ void connectToWifi() {
   Serial.println("");
   Serial.print("Connecting To: ");
   Serial.println(ssid);
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, networkPassword);
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -92,6 +119,9 @@ void connectToWifi() {
 
 
 int sendAlarmEmail() {
+
+
+Email email {smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail};
 
 if (espClient.connect(server, 2525) == 1) 
   {
@@ -115,50 +145,55 @@ if (espClient.connect(server, 2525) == 1)
   if (!emailResp()) 
   return 0;*/
   //  
-  Serial.println(F("Sending auth login"));
+  Serial.println("Sending auth login");
   espClient.println("AUTH LOGIN");
   if (!emailResp()) 
     return 0;
   //  
-  Serial.println(F("Sending User"));
+  Serial.println("Sending User");
   // Change this to your base64, ASCII encoded username
   /*
   For example, the email address test@gmail.com would be encoded as dGVzdEBnbWFpbC5jb20=
   */
-  espClient.println("dGVzdEBnbWFpbC5jb20="); //base64, ASCII encoded Username
+  espClient.println(base64::encode(email.smtpUserName)); //base64, ASCII encoded Username
   if (!emailResp()) 
     return 0;
   //
-  Serial.println(F("Sending Password"));
+  Serial.println("Sending Password");
   // change to your base64, ASCII encoded password
   /*
   For example, if your password is "testpassword" (excluding the quotes),
   it would be encoded as dGVzdHBhc3N3b3Jk
   */
-  espClient.println("dGVzdHBhc3N3b3Jk");//base64, ASCII encoded Password
+  espClient.println(base64::encode(email.smtpPassword));//base64, ASCII encoded Password
   if (!emailResp()) 
     return 0;
-  //
-  Serial.println(F("Sending From"));
-  // change to sender email address
-  espClient.println(F("MAIL From: sender@gmail.com"));
+  
+
+  String from = "MAIL From: " + email.sender;
+  Serial.println(from);
+  espClient.println(from);
   if (!emailResp()) 
     return 0;
-  // change to recipient address
-  Serial.println(F("Sending To"));
-  espClient.println(F("RCPT To: receiver@gmail.com"));
+
+  String to = "RCPT To: " + email.recipient;
+  Serial.println(to);
+  espClient.println(to);
   if (!emailResp()) 
     return 0;
-  //
-  Serial.println(F("Sending DATA"));
-  espClient.println(F("DATA"));
+  
+
+  Serial.println("Sending DATA");
+  espClient.println("DATA");
   if (!emailResp()) 
     return 0;
+
+
   Serial.println(F("Sending email"));
   // change to recipient address
-  espClient.println(F("To:  receiver@gmail.com"));
+  espClient.println("To: " + email.recipient);
   // change to your address
-  espClient.println(F("From: sender@gmail.com"));
+  espClient.println("From: " + email.sender);
   espClient.println(F("Subject: ESP8266 test e-mail\r\n"));
   espClient.println(F("This is is a test e-mail sent from ESP8266.\n"));
   espClient.println(F("Second line of the test e-mail."));
@@ -214,40 +249,40 @@ void loop() {
   delay(1000);
   Serial.println("checking...");
 
-  // if(digitalRead(alarmTrigger.PIN) == HIGH) {
+  if(digitalRead(alarmTrigger.PIN) == HIGH) {
     
-  //   alarmActive = true;
+    alarmActive = true;
     
     
       
   
-  //   // blink light wait for isr
-  //     while(alarmActive == true) {
-  //       // D1-mini chip io pins can draw more then they can 
-  //       // output so inverted wiring in order to make led brighter
-  //       Serial.println("blinking...");
-  //       digitalWrite(ledPin, LOW);  // turn LED ON
-  //       delay(500);
-  //       digitalWrite(ledPin, HIGH);  // turn LED OFF
-  //       delay(200);
-  //       digitalWrite(ledPin, LOW);  // turn LED ON
-  //       delay(500);
-  //       digitalWrite(ledPin, HIGH);  // turn LED OFF
-  //       delay(1200);
-  //   }
+    // blink light wait for isr
+      while(alarmActive == true) {
+        // D1-mini chip io pins can draw more then they can 
+        // output so inverted wiring in order to make led brighter
+        Serial.println("blinking...");
+        digitalWrite(ledPin, LOW);  // turn LED ON
+        delay(500);
+        digitalWrite(ledPin, HIGH);  // turn LED OFF
+        delay(200);
+        digitalWrite(ledPin, LOW);  // turn LED ON
+        delay(500);
+        digitalWrite(ledPin, HIGH);  // turn LED OFF
+        delay(1200);
+    }
 
 
-  //   // arming blinking signal
-  //   for(int i = 0; i < 10; i++) {
-  //     digitalWrite(ledPin, LOW);
-  //     delay(100);
-  //     digitalWrite(ledPin, HIGH);
-  //     delay(100);
-  //   }
-  //     digitalWrite(ledPin,LOW);
-  //     delay(2000);
-  //     digitalWrite(ledPin,HIGH);
-  // }
+    // arming blinking signal
+    for(uint8_t i = 0; i < 10; i++) {
+      digitalWrite(ledPin, LOW);
+      delay(100);
+      digitalWrite(ledPin, HIGH);
+      delay(100);
+    }
+      digitalWrite(ledPin,LOW);
+      delay(2000);
+      digitalWrite(ledPin,HIGH);
+  }
 
 
 }
