@@ -36,6 +36,40 @@ void isr() {
   }
 }
 
+int emailResp()
+{
+  byte responseCode;
+  byte readByte;
+  int loopCount = 0;
+
+  while (!espClient.available()) 
+  {
+    delay(1);
+    loopCount++;
+    // Wait for 20 seconds and if nothing is received, stop.
+    if (loopCount > 20000) 
+    {
+      espClient.stop();
+      Serial.println(F("\r\nTimeout"));
+      return 0;
+    }
+  }
+
+  responseCode = espClient.peek();
+  while (espClient.available())
+  {
+    readByte = espClient.read();
+    Serial.write(readByte);
+  }
+
+  if (responseCode >= '4')
+  {
+    //  efail();
+    return 0;
+  }
+  return 1;
+}
+
 void connectToWifi() {
   delay(10);
   Serial.println("");
@@ -147,39 +181,7 @@ if (espClient.connect(server, 2525) == 1)
   
 }
 
-byte emailResp()
-{
-  byte responseCode;
-  byte readByte;
-  int loopCount = 0;
 
-  while (!espClient.available()) 
-  {
-    delay(1);
-    loopCount++;
-    // Wait for 20 seconds and if nothing is received, stop.
-    if (loopCount > 20000) 
-    {
-      espClient.stop();
-      Serial.println(F("\r\nTimeout"));
-      return 0;
-    }
-  }
-
-  responseCode = espClient.peek();
-  while (espClient.available())
-  {
-    readByte = espClient.read();
-    Serial.write(readByte);
-  }
-
-  if (responseCode >= '4')
-  {
-    //  efail();
-    return 0;
-  }
-  return 1;
-}
 
 
 
@@ -195,6 +197,10 @@ void setup() {
   
   Serial.begin(9600);
 
+  connectToWifi();
+
+  sendAlarmEmail();
+
 }
 
 void loop() {
@@ -204,7 +210,7 @@ void loop() {
     
     alarmActive = true;
     
-    sendAlarmEmail();
+    
       
   
     // blink light wait for isr
