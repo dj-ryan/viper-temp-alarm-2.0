@@ -8,7 +8,7 @@ const String password = "R0b0tsCutY0u";// Enter the Password of your WiFi Networ
 char server[] = "mail.smtp2go.com"; // The SMTP Server 
 
 struct Button {
-  const uint8_t PIN;
+  uint8_t PIN;
   bool pressed;
 };
 
@@ -21,11 +21,11 @@ unsigned long pressReleaseDelta = 2000; // in ms
 Button alarmTrigger {2, false};
 Button alarmReset {3, false};
 
-int ledPin = 4;
+uint8_t ledPin = 4;
 
 WiFiClient espClient;
 
-void isr() {
+void ICACHE_RAM_ATTR isr() {
   alarmReset.pressed = !alarmReset.pressed;
   if(alarmReset.pressed == true) {
     pressTime = millis();
@@ -188,6 +188,10 @@ if (espClient.connect(server, 2525) == 1)
 
 void setup() {
 
+  Serial.begin(9600);
+
+  Serial.println("Beginning...");
+
   pinMode(alarmReset.PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
   
@@ -195,11 +199,11 @@ void setup() {
   
   pinMode(ledPin, OUTPUT);
   
-  Serial.begin(9600);
 
-  Serial.println("Beginning...");
 
-  //connectToWifi();
+  connectToWifi();
+
+  Serial.println("connection to wifi successfull");
 
   //sendAlarmEmail();
 
@@ -209,40 +213,41 @@ void loop() {
 
   delay(1000);
   Serial.println("checking...");
-  if(digitalRead(alarmTrigger.PIN) == HIGH) {
+
+  // if(digitalRead(alarmTrigger.PIN) == HIGH) {
     
-    alarmActive = true;
+  //   alarmActive = true;
     
     
       
   
-    // blink light wait for isr
-      while(alarmActive == true) {
-        // D1-mini chip io pins can draw more then they can 
-        // output so inverted wiring in order to make led brighter
-        Serial.println("blinking...");
-        digitalWrite(ledPin, LOW);  // turn LED ON
-        delay(500);
-        digitalWrite(ledPin, HIGH);  // turn LED OFF
-        delay(200);
-        digitalWrite(ledPin, LOW);  // turn LED ON
-        delay(500);
-        digitalWrite(ledPin, HIGH);  // turn LED OFF
-        delay(1200);
-    }
+  //   // blink light wait for isr
+  //     while(alarmActive == true) {
+  //       // D1-mini chip io pins can draw more then they can 
+  //       // output so inverted wiring in order to make led brighter
+  //       Serial.println("blinking...");
+  //       digitalWrite(ledPin, LOW);  // turn LED ON
+  //       delay(500);
+  //       digitalWrite(ledPin, HIGH);  // turn LED OFF
+  //       delay(200);
+  //       digitalWrite(ledPin, LOW);  // turn LED ON
+  //       delay(500);
+  //       digitalWrite(ledPin, HIGH);  // turn LED OFF
+  //       delay(1200);
+  //   }
 
 
-    // arming blinking signal
-    for(int i = 0; i < 10; i++) {
-      digitalWrite(ledPin, LOW);
-      delay(100);
-      digitalWrite(ledPin, HIGH);
-      delay(100);
-    }
-      digitalWrite(ledPin,LOW);
-      delay(2000);
-      digitalWrite(ledPin,HIGH);
-  }
+  //   // arming blinking signal
+  //   for(int i = 0; i < 10; i++) {
+  //     digitalWrite(ledPin, LOW);
+  //     delay(100);
+  //     digitalWrite(ledPin, HIGH);
+  //     delay(100);
+  //   }
+  //     digitalWrite(ledPin,LOW);
+  //     delay(2000);
+  //     digitalWrite(ledPin,HIGH);
+  // }
 
 
 }
