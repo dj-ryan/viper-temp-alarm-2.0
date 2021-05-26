@@ -299,9 +299,13 @@ String getCurrentTime()
 
   timeClient.begin();
 
-  timeClient.update();
+  //String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
 
-  return daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  String currentTime = timeClient.getFormattedTime();
+
+  timeClient.end();
+
+  return currentTime;
 }
 
 // -eof
