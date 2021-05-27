@@ -23,11 +23,11 @@ const String networkPassword = "R0b0tsCutY0u";
 
 // email recipient account info
 const String recipientEmail = "vipermtempalarm@gmail.com";
-const String recipientEmailPassword = "";
+const String recipientEmailPassword = ""; // not used
 
 // smtp account info
 const String smtpUserName = "vipermtempalarmsender@gmail.com";
-const String smtpPassword = "PNiXugnd0cYt";
+const String smtpPassword = "47LnE6eyJW9W9Kmh";
 
 // email sender account info
 const String senderEmail = "vipermtempalarmsender@gmail.com";
@@ -50,7 +50,8 @@ struct Email
   String recipient;
 };
 
-bool alarmActive = false;
+
+bool alarmActive = false; // system state
 
 unsigned long pressTime = 0; // time of current press
 
@@ -64,6 +65,7 @@ uint8_t ledPin = 4; // led pin number
 
 WiFiClient espClient;
 
+// Interupt Service Routine
 void ICACHE_RAM_ATTR isr()
 {
   alarmReset.pressed = !alarmReset.pressed;
@@ -90,9 +92,6 @@ void disconnectFromWifi();
 void setup()
 {
 
-  Serial.begin(9600);
-  Serial.println("begginging setup...");
-
   pinMode(alarmReset.PIN, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
@@ -101,24 +100,15 @@ void setup()
 
   pinMode(ledPin, OUTPUT);
 
-  connectToWifi();
-
-  sendAlarmEmail();
-
-  getCurrentTime();
-
-  disconnectFromWifi();
-
-  Serial.println("setup compleated");
 }
 
 void loop()
 {
 
-  Serial.println("checking...");
   delay(1000);
 
-  if (digitalRead(alarmTrigger.PIN) == LOW)
+
+  if (digitalRead(alarmTrigger.PIN) == LOW) // check for alarm trigger
   {
 
     alarmActive = true;
@@ -214,15 +204,16 @@ void connectToWifi()
 
 void disconnectFromWifi()
 {
-  WiFi.disconnect();
+  WiFi.disconnect(); // disconect from WiFi
 }
 
 int sendAlarmEmail()
 {
 
-  Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail};
+  Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail}; // email struct
 
-  if (espClient.connect(server, 2525) == 1)
+  
+  if (espClient.connect(server, 2525) == 1) // attempt connection to server
   {
     //Serial.println("connected");
   }
@@ -281,13 +272,10 @@ int sendAlarmEmail()
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
   espClient.println("Triggered at: " + currentTime);
-  // espClient.println("");
-  // espClient.println("  _   _________  _______    ____________  ______    ___   __   ___   ___  __  ___");
-  // espClient.println(" | | / /  _/ _ \\/ __/ _ \\  /_  __/ __/  |/  / _ \\  / _ | / /  / _ | / _ \\/  |/  /");
-  // espClient.println(" | |/ // // ___/ _// , _/   / / / _// /|_/ / ___/ / __ |/ /__/ __ |/ , _/ /|_/ / ");
-  // espClient.println(" |___/___/_/  /___/_/|_|   /_/ /___/_/  /_/_/    /_/ |_/____/_/ |_/_/|_/_/  /_/ ");
-  // espClient.println("");
-  // espClient.println("       \"Keeping your stuff cool, since 2019\"");
+  espClient.println("Press and hold the Red Button on the Viper Temp Alarm for 3 seconds to reset it.");
+  espClient.println("");
+  espClient.println("**VIPER TEMP ALARM**");
+  espClient.println("   \"Keeping your stuff cool, since 2019\"");
 
   espClient.println(".");
   if (!emailResp())
@@ -310,8 +298,8 @@ String getCurrentTime()
 
   timeClient.update();
 
-  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
-
+  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() 
+    + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
 
   timeClient.end();
 

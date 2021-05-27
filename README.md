@@ -37,8 +37,20 @@ To deactivate the alarm press and hold the Red button for 3 seconds. The LED sho
 
 ## Wiring information
 
+- Red button
+    - D1
+    - Gnd
+- Trigger pin
+    - D2
+    - Gnd
+- Led output
+    - Neg: D3
+    - Pos: Gnd
+- DC input
+    - Pos: 5V
+    - Neg: Gnd
 
-
+Polarities on Led are switched to allow greater current draw.
 
 ## Account information:
 
