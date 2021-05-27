@@ -1,22 +1,10 @@
 // Ownership: Virtual Incision Corp
-// Last Modified: 5/26/2021
+// Last Modified: 5/27/2021
 // Author: David Ryan
 //   E: davidryn6@gmail.com
 //   C: (402)-499-8715
+
 // ++Virtual Incision Permanent Temperature Alarm++
-
-// OM-THA2-U Temperature/Humidity/Dewpoint Alarm's (120-000060-000) NO (normally open) relay output 
-// is connected to a INPUT pin on the WeMos D1 Mini ESP8266 chip. When tripped the program will send
-// an email and blink it's LED
-
-
-
-
-
-
-
-
-
 
 #include <Arduino.h>
 

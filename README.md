@@ -1,19 +1,63 @@
 # viper-temp-alarm-2.0
 
-Ownership: Virtual Incision Corp
-Last Modified: 8/13/2019
-Author: David Ryan
-  E: davidryn6@gmail.com
-  C: (402)-499-8715
-++Permanent Temperature Alarm++
-OM-THA2-U Temperature/Humidity/Dewpoint Alarm's (120-000060-000) NO (normaly open) relay output 
-connected to reset pin of WeMos D1 Mini ESP8266 chip. When tripped opens curcit and resets 
+## System Overview
+
+The OM-THA2-U Temperature/Humidity/Dewpoint Alarm's (120-000060-000) NO (normally open) relay output 
+is connected to a INPUT pin on the WeMos D1 Mini ESP8266 micro controller. When tripped this program will send
+an email using Standard Mail Transfer Protocol (SMTP) which can then be forwarded to any desired email. It wll also
+begin a light blinking sequence on the external LED.
+
+### Detailed Description
+
+There is one input available to the user and one to the OM-THA2-U Temperature Alarm.
+- User Input:
+    - Red button
+- Alarm Input:
+    - Trigger pin
+
+The only output of the system is a red LED that is built into the button.
+
+There are two states the system can be in: 
+- Active
+- Not active
+When the system is in a deactivated state it will continually loop to check if the Trigger pin
+has been tripped.
+When the System first becomes Active it will attempt to connect to the Virtual-Incision network
+Upon successes it will attempt to send an email with the current date and time and a warning message
+that the alarm has been tripped.
+After this it will begin a light flashing sequence on the output LED to visually notify that the alarm is active.
 
 
 
-build as a PlatformIO project
+## System Use
 
-This system 
+The system once powered on should imminently start in a deactivated state. It will begin checking the Trigger pin.
+If the system is tripped an email should be sent to the desired addresses and the LED should begin blinking.
+
+To deactivate the alarm press and hold the Red button for 3 seconds. The LED should flash rapidly for a few seconds and then turn solid and finally turn off. This indicates that the alarm has been deactivated and it will again begin checking the Trigger pin. 
+
+## Wiring information
+
+
+
+
+## Account information:
+
+
+
+
+## Rebuild and edit this project
+
+This project must me built as a PlatformIO project.
+- Install VS Code and PlatformIO extension
+- Locate PlatformIO project folder and clone this git repo into it
+- Install 2 library dependencies using PIO 
+    - densaugeo/base64@^1.2.0
+	- arduino-libraries/NTPClient@^3.1.0
+review the paltformio.ini file for further information
+
+
+
 
 
 const String ssid = "VirtualIncision-Internal";
@@ -30,35 +74,3 @@ const String smtpPassword = "PNiXugnd0cYt";
 // email sender account info
 const String senderEmail = "vipermtempalarmsender@gmail.com";
 const String senderEmailPassword = "XXaJQnV2t3utL7bu";
-
-
-
-/*
-Ownership: Virtual Incision Corp
-Last Modified: 8/13/2019
-Author: David Ryan
-  E: davidryn6@gmail.com
-  C: (402)-499-8715
-++Permanent Temperature Alarm++
-OM-THA2-U Temperature/Humidity/Dewpoint Alarm's (120-000060-000) NO (normaly open) relay output 
-connected to reset pin of WeMos D1 Mini ESP8266 chip. When tripped opens curcit and resets 
-D1 Mini to run this program.
-D1 Mini driver:
-https://wiki.wemos.cc/downloads
-board Manager:
-http://arduino.esp8266.com/stable/package_esp8266com_index.json
-setup:
-Connects to Internal WiFi and triggers an event on ifttt. ifttt sends email to a
-dummy Virtual Incision google account (details below). Sets keepAlivePin to HIGH to
-prevent reset upon Alarm reset. Blinks LED light and waits for a button input to 
-break loop.  Sets keepAlivePin to low to allow reset.
-loop:
-na
-Virtual Incision dummy google account info:
-vipermtempalarm@gmail.com
-password: EtGuUU++vNN@#4GZ
-password will work with anything connected to this account including ifttt.
-Email can be forwarded to any account. 
-Serial prints have been commented out to optimize code, uncomment for debug.
-*/
-
