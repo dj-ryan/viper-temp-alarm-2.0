@@ -147,13 +147,13 @@ void loop()
       // output so inverted wiring in order to make led brighter
       Serial.println("blinking...");
       digitalWrite(ledPin, LOW); // turn LED ON
-      delay(500);
+      delay(300);
       digitalWrite(ledPin, HIGH); // turn LED OFF
       delay(200);
       digitalWrite(ledPin, LOW); // turn LED ON
-      delay(500);
+      delay(300);
       digitalWrite(ledPin, HIGH); // turn LED OFF
-      delay(1200);
+      delay(800);
     }
 
     // arming blinking signal
