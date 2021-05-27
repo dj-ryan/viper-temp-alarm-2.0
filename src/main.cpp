@@ -13,7 +13,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-const long utcOffsetInSeconds = -21600; // utc offset
+const long utcOffsetInSeconds = -18000; // utc offset
 
 String daysOfTheWeek[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
@@ -27,11 +27,11 @@ const String recipientEmailPassword = ""; // not used
 
 // smtp account info
 const String smtpUserName = "vipermtempalarmsender@gmail.com";
-const String smtpPassword = "47LnE6eyJW9W9Kmh";
+const String smtpPassword = "2gLg3vELCUYSbLHR";
 
 // email sender account info
 const String senderEmail = "vipermtempalarmsender@gmail.com";
-const String senderEmailPassword = "XXaJQnV2t3utL7bu";
+const String senderEmailPassword = "47LnE6eyJW9W9Kmh";
 
 String server = "mail.smtp2go.com"; // The SMTP Server
 
@@ -92,6 +92,10 @@ void disconnectFromWifi();
 void setup()
 {
 
+  Serial.begin(9600);
+
+  Serial.println("");
+
   pinMode(alarmReset.PIN, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
@@ -99,6 +103,15 @@ void setup()
   pinMode(alarmTrigger.PIN, INPUT_PULLUP);
 
   pinMode(ledPin, OUTPUT);
+
+    connectToWifi(); // establish network connection
+
+    int error = sendAlarmEmail(); // send formated email with current time
+
+    Serial.println("error: " + error);
+
+    disconnectFromWifi(); // disconnect from network
+
 
 }
 
@@ -115,7 +128,7 @@ void loop()
 
     connectToWifi(); // establish network connection
 
-    sendAlarmEmail(); // send formated email with current time
+    int error = sendAlarmEmail(); // send formated email with current time
 
     disconnectFromWifi(); // disconnect from network
 
@@ -196,6 +209,7 @@ void connectToWifi()
         // break both loops
         i = 100;
         attempts = 100;
+        Serial.println("Wifi connection succesfull");
       }
     }
     delay(1500);
@@ -215,11 +229,11 @@ int sendAlarmEmail()
   
   if (espClient.connect(server, 2525) == 1) // attempt connection to server
   {
-    //Serial.println("connected");
+    Serial.println("connected");
   }
   else
   {
-    //Serial.println("connection failed");
+    Serial.println("connection failed");
     return 0;
   }
   if (!emailResp())
