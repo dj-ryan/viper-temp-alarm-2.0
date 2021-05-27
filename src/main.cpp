@@ -96,6 +96,8 @@ void setup()
 
   Serial.println("");
 
+  Serial.println("Beginning...");
+
   pinMode(alarmReset.PIN, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(alarmReset.PIN), isr, CHANGE);
@@ -104,13 +106,16 @@ void setup()
 
   pinMode(ledPin, OUTPUT);
 
-    connectToWifi(); // establish network connection
+  Serial.println("Setup compleate.");
 
-    int error = sendAlarmEmail(); // send formated email with current time
+    // connectToWifi(); // establish network connection
 
-    Serial.println("error: " + error);
+    // int error = sendAlarmEmail(); // send formated email with current time
 
-    disconnectFromWifi(); // disconnect from network
+    // Serial.println("error: " + error);
+
+    // disconnectFromWifi(); // disconnect from network
+
 
 
 }
@@ -118,6 +123,7 @@ void setup()
 void loop()
 {
 
+  Serial.println("Checking...");
   delay(1000);
 
 
@@ -129,6 +135,8 @@ void loop()
     connectToWifi(); // establish network connection
 
     int error = sendAlarmEmail(); // send formated email with current time
+
+    Serial.println("error sending email " + error);
 
     disconnectFromWifi(); // disconnect from network
 
@@ -199,14 +207,17 @@ void connectToWifi()
   // attempt a connection at least 5 times
   for (uint8_t attempts = 0; attempts <= 5; attempts++)
   {
+    Serial.println("Connecting to WiFi");
     WiFi.begin(ssid, networkPassword);
     for (uint8_t i = 0; i <= 20; i++)
     {
       delay(500);
+      Serial.print(".");
       // wait for connection to be established
       if (WiFi.status() == WL_CONNECTED)
       {
         // break both loops
+        Serial.println();
         i = 100;
         attempts = 100;
         Serial.println("Wifi connection succesfull");
