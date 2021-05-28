@@ -116,8 +116,6 @@ void setup()
 
     // disconnectFromWifi(); // disconnect from network
 
-
-
 }
 
 void loop()
