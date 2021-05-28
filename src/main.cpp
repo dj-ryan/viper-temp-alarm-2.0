@@ -50,8 +50,9 @@ struct Email
   String recipient;
 };
 
-
 bool alarmActive = false; // system state
+
+bool debugInfo = 1; // debug info to Serial Monitor
 
 unsigned long pressTime = 0; // time of current press
 
@@ -90,15 +91,19 @@ int emailResp();
 int sendAlarmEmail();
 String getCurrentTime();
 void disconnectFromWifi();
+inline const String BoolToString(bool b);
 
 void setup()
 {
 
-  Serial.begin(9600);
+  if (debugInfo)
+  {
+    Serial.begin(9600);
 
-  Serial.println("");
+    Serial.println();
 
-  Serial.println("Beginning...");
+    Serial.println("Beginning...");
+  }
 
   pinMode(alarmReset.PIN, INPUT_PULLUP);
 
@@ -110,26 +115,22 @@ void setup()
 
   digitalWrite(ledPin, HIGH);
 
-  Serial.println("Setup compleate.");
-
-    // connectToWifi(); // establish network connection
-
-    // int error = sendAlarmEmail(); // send formated email with current time
-
-    // Serial.println("error: " + error);
-
-    // disconnectFromWifi(); // disconnect from network
-
+  if (debugInfo)
+  {
+    Serial.println("Setup compleate.");
+  }
 }
 
 void loop()
 {
+  delay(1000); // delay to check
 
-  Serial.println("Checking...");
-  delay(1000);
+  if (debugInfo)
+  {
+    Serial.println("Alarm: " + BoolToString(alarmActive) + "Checking Trigger Pin...");
+  }
 
-
-  if (digitalRead(alarmTrigger.PIN) == LOW) // check for alarm trigger
+  if (digitalRead(alarmTrigger.PIN) == LOW) // check for alarm trigger pull up resistor enabled check for low
   {
 
     alarmActive = true;
@@ -138,7 +139,10 @@ void loop()
 
     int error = sendAlarmEmail(); // send formated email with current time
 
-    Serial.println("error sending email " + error);
+    if (debugInfo)
+    {
+      Serial.println("Email sent: " + error);
+    }
 
     disconnectFromWifi(); // disconnect from network
 
@@ -147,7 +151,12 @@ void loop()
     {
       // D1-mini chip io pins can draw more then they can
       // output so inverted wiring in order to make led brighter
-      Serial.println("blinking...");
+
+      if (debugInfo)
+      {
+        Serial.println("blinking...");
+      }
+
       digitalWrite(ledPin, LOW); // turn LED ON
       delay(300);
       digitalWrite(ledPin, HIGH); // turn LED OFF
@@ -169,39 +178,12 @@ void loop()
     digitalWrite(ledPin, LOW);
     delay(2000);
     digitalWrite(ledPin, HIGH);
-  }
-}
 
-int emailResp()
-{
-  byte responseCode;
-  byte readByte;
-  int loopCount = 0;
-
-  while (!espClient.available())
-  {
-    delay(1);
-    loopCount++;
-
-    if (loopCount > 20000) // Wait for 20 seconds and if nothing is received, stop.
+    if (debugInfo)
     {
-      espClient.stop();
-      return 0;
+      Serial.println("Alarm Reset.");
     }
   }
-
-  responseCode = espClient.peek();
-  while (espClient.available())
-  {
-    readByte = espClient.read();
-    Serial.write(readByte);
-  }
-
-  if (responseCode >= '4')
-  {
-    return 0;
-  }
-  return 1;
 }
 
 void connectToWifi()
@@ -209,12 +191,18 @@ void connectToWifi()
   // attempt a connection at least 5 times
   for (uint8_t attempts = 0; attempts <= 5; attempts++)
   {
-    Serial.println("Connecting to WiFi");
+    if (debugInfo)
+    {
+      Serial.println("Connecting to WiFi");
+    }
     WiFi.begin(ssid, networkPassword);
     for (uint8_t i = 0; i <= 20; i++)
     {
       delay(500);
-      Serial.print(".");
+      if (debugInfo)
+      {
+        Serial.print(".");
+      }
       // wait for connection to be established
       if (WiFi.status() == WL_CONNECTED)
       {
@@ -222,8 +210,15 @@ void connectToWifi()
         Serial.println();
         i = 100;
         attempts = 100;
-        Serial.println("Wifi connection succesfull");
+        if (debugInfo)
+        {
+          Serial.println("Wifi connection succesfull");
+        }
       }
+    }
+    if (debugInfo)
+    {
+      Serial.println();
     }
     delay(1500);
   }
@@ -234,28 +229,39 @@ void disconnectFromWifi()
   WiFi.disconnect(); // disconect from WiFi
 }
 
+// send an email using SMTP
 int sendAlarmEmail()
 {
 
   Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail}; // email struct
 
-  
   if (espClient.connect(server, 2525) == 1) // attempt connection to server
   {
-    Serial.println("connected");
+    if (debugInfo)
+    {
+      Serial.println("connected to SMTP server");
+    }
   }
   else
   {
-    Serial.println("connection failed");
+    if (debugInfo)
+    {
+      Serial.println("connection to SMTP server failed");
+    }
     return 0;
   }
-  if (!emailResp())
-    return 0;
 
-  espClient.println("EHLO www.example.com");
   if (!emailResp())
+  {
     return 0;
+  }
 
+  espClient.println("EHLO"); // removed "EHLO www.example.com"
+
+  if (!emailResp())
+  {
+    return 0;
+  }
   // only use if STARTTLS seccurity is used
   /*
   espClient.println("STARTTLS");
@@ -264,22 +270,32 @@ int sendAlarmEmail()
   */
 
   espClient.println("AUTH LOGIN");
+
   if (!emailResp())
+  {
     return 0;
+  }
 
   espClient.println(base64::encode(email.smtpUserName)); //base64, ASCII encoded Username
+
   if (!emailResp())
+  {
     return 0;
+  }
 
   espClient.println(base64::encode(email.smtpPassword)); //base64, ASCII encoded Password
+
   if (!emailResp())
+  {
     return 0;
+  }
 
   String from = "MAIL From: " + email.sender;
   espClient.println(from);
   if (!emailResp())
+  {
     return 0;
-
+  }
   String to = "RCPT To: " + email.recipient;
   espClient.println(to);
   if (!emailResp())
@@ -288,8 +304,9 @@ int sendAlarmEmail()
   // sending data
   espClient.println("DATA");
   if (!emailResp())
+  {
     return 0;
-
+  }
   // email content
   espClient.println("To: " + email.recipient);
   espClient.println("From: " + email.sender);
@@ -306,16 +323,57 @@ int sendAlarmEmail()
 
   espClient.println(".");
   if (!emailResp())
+  {
     return 0;
+  }
 
   espClient.println("QUIT");
   if (!emailResp())
+  {
     return 0;
+  }
 
   espClient.stop();
   return 1;
 }
 
+int emailResp()
+{
+  byte responseCode;
+  byte readByte;
+  uint8_t loopCount = 0;
+
+  while (!espClient.available())
+  {
+    delay(1);
+    loopCount++;
+
+    if (loopCount > 20000) // Wait for 20 seconds and if nothing is received, stop.
+    {
+      espClient.stop();
+      return 0;
+    }
+  }
+
+  responseCode = espClient.peek(); // peek response code
+  while (espClient.available())
+  {
+    readByte = espClient.read();
+    if (debugInfo)
+    {
+      Serial.write(readByte); // code received in ASCII bytes that can be printed to serial
+    }
+  }
+
+  if (responseCode >= '4')
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+// get current date and time
 String getCurrentTime()
 {
   WiFiUDP ntpUDP;
@@ -325,12 +383,17 @@ String getCurrentTime()
 
   timeClient.update();
 
-  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() 
-    + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
 
   timeClient.end();
 
   return currentTime;
+}
+
+// Bool to String
+inline const String BoolToString(bool b)
+{
+  return b ? "true" : "false";
 }
 
 // -eof
