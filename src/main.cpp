@@ -106,7 +106,7 @@ void setup()
 
   pinMode(ledPin, OUTPUT);
 
-  digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin, );
 
   Serial.println("Setup compleate.");
 
