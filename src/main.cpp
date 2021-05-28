@@ -69,6 +69,8 @@ WiFiClient espClient;
 void ICACHE_RAM_ATTR isr()
 {
   alarmReset.pressed = !alarmReset.pressed;
+
+  // toggle function based on press and release
   if (alarmReset.pressed == true)
   {
     pressTime = millis();
