@@ -89,7 +89,7 @@ void ICACHE_RAM_ATTR isr()
 void connectToWifi();
 int emailResp();
 bool sendAlarmEmail();
-String getCurrentTime();
+String getCurrentTime(String s);
 void disconnectFromWifi();
 inline const String BoolToString(bool b);
 
@@ -133,9 +133,9 @@ void loop()
   if (digitalRead(alarmTrigger.PIN) == LOW) // check for alarm trigger pull up resistor enabled check for low
   {
 
-    if(debugInfo) {
+    if (debugInfo)
+    {
       Serial.println("ALARM TRIPPED!!!");
-      Serial.println("Tripped at: " + getCurrentTime());
     }
 
     alarmActive = true;
@@ -232,7 +232,8 @@ void connectToWifi()
 void disconnectFromWifi()
 {
   WiFi.disconnect(); // disconect from WiFi
-  if(debugInfo){
+  if (debugInfo)
+  {
     Serial.println("Disconnected from WiFi.");
   }
 }
@@ -248,6 +249,7 @@ bool sendAlarmEmail()
     if (debugInfo)
     {
       Serial.println("connected to SMTP server");
+      Serial.println("Server Response:");
     }
   }
   else
@@ -270,7 +272,8 @@ bool sendAlarmEmail()
   {
     return false;
   }
-  // only use if STARTTLS seccurity is used
+
+  // only use if STARTTLS network security is used
   /*
   espClient.println("STARTTLS");
   if (!emailResp()) 
@@ -315,15 +318,17 @@ bool sendAlarmEmail()
   {
     return false;
   }
+
   // email content
   espClient.println("To: " + email.recipient);
   espClient.println("From: " + email.sender);
-  String currentTime = getCurrentTime();
-  String subject = "Subject: Viper Alarm Triggered on " + currentTime + "\r\n";
+  String softCurrentTime = getCurrentTime("Soft");
+  String hardCurrentTime = getCurrentTime("Hard");
+  String subject = "Subject: Viper Alarm Triggered on " + softCurrentTime + "\r\n";
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
-  espClient.println("Triggered at: " + currentTime);
+  espClient.println("Triggered at: " + hardCurrentTime);
   espClient.println("Press and hold the Red Button on the Viper Temp Alarm for 3 seconds to reset it.");
   espClient.println("");
   espClient.println("**VIPER TEMP ALARM**");
@@ -383,7 +388,7 @@ int emailResp()
 }
 
 // get current date and time
-String getCurrentTime()
+String getCurrentTime(String s)
 {
   WiFiUDP ntpUDP;
   NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
@@ -392,7 +397,23 @@ String getCurrentTime()
 
   timeClient.update();
 
-  String currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  String currentTime;
+
+  if (s == "s" || s == "soft" || s == "Soft" || s == "SOFT")
+  {
+    currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  }
+  else
+  {
+
+    unsigned long epochTime = timeClient.getEpochTime();
+    struct tm *ptm = gmtime((time_t *)&epochTime);
+    int monthDay = ptm->tm_mday;
+    int currentMonth = ptm->tm_mon + 1;
+    int currentYear = ptm->tm_year+1900;
+
+    String currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  }
 
   timeClient.end();
 
