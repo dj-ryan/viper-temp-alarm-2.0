@@ -1,5 +1,5 @@
 // Ownership: Virtual Incision Corp
-// Last Modified: 5/27/2021
+// Last Modified: 5/28/2021
 // Author: David Ryan
 //   E: davidryn6@gmail.com
 //   C: (402)-499-8715
@@ -88,7 +88,7 @@ void ICACHE_RAM_ATTR isr()
 // function prototypes
 void connectToWifi();
 int emailResp();
-int sendAlarmEmail();
+bool sendAlarmEmail();
 String getCurrentTime();
 void disconnectFromWifi();
 inline const String BoolToString(bool b);
@@ -127,21 +127,26 @@ void loop()
 
   if (debugInfo)
   {
-    Serial.println("Alarm: " + BoolToString(alarmActive) + "Checking Trigger Pin...");
+    Serial.println("Alarm: " + BoolToString(alarmActive) + ", Checking Trigger Pin...");
   }
 
   if (digitalRead(alarmTrigger.PIN) == LOW) // check for alarm trigger pull up resistor enabled check for low
   {
 
+    if(debugInfo) {
+      Serial.println("ALARM TRIPPED!!!");
+      Serial.println("Tripped at: " + getCurrentTime());
+    }
+
     alarmActive = true;
 
     connectToWifi(); // establish network connection
 
-    int error = sendAlarmEmail(); // send formated email with current time
+    bool error = sendAlarmEmail(); // send formated email with current time
 
     if (debugInfo)
     {
-      Serial.println("Email sent: " + error);
+      Serial.println("Email sent: " + BoolToString(error));
     }
 
     disconnectFromWifi(); // disconnect from network
@@ -154,7 +159,7 @@ void loop()
 
       if (debugInfo)
       {
-        Serial.println("blinking...");
+        Serial.println("Alarm: " + BoolToString(alarmActive) + ", blinking LED...");
       }
 
       digitalWrite(ledPin, LOW); // turn LED ON
@@ -212,7 +217,7 @@ void connectToWifi()
         attempts = 100;
         if (debugInfo)
         {
-          Serial.println("Wifi connection succesfull");
+          Serial.println("Wifi connection successfull");
         }
       }
     }
@@ -227,10 +232,13 @@ void connectToWifi()
 void disconnectFromWifi()
 {
   WiFi.disconnect(); // disconect from WiFi
+  if(debugInfo){
+    Serial.println("Disconnected from WiFi.");
+  }
 }
 
 // send an email using SMTP
-int sendAlarmEmail()
+bool sendAlarmEmail()
 {
 
   Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail}; // email struct
@@ -248,19 +256,19 @@ int sendAlarmEmail()
     {
       Serial.println("connection to SMTP server failed");
     }
-    return 0;
+    return false;
   }
 
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
-  espClient.println("EHLO"); // removed "EHLO www.example.com"
+  espClient.println("EHLO");
 
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
   // only use if STARTTLS seccurity is used
   /*
@@ -273,39 +281,39 @@ int sendAlarmEmail()
 
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
   espClient.println(base64::encode(email.smtpUserName)); //base64, ASCII encoded Username
 
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
   espClient.println(base64::encode(email.smtpPassword)); //base64, ASCII encoded Password
 
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
   String from = "MAIL From: " + email.sender;
   espClient.println(from);
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
   String to = "RCPT To: " + email.recipient;
   espClient.println(to);
   if (!emailResp())
-    return 0;
+    return false;
 
   // sending data
   espClient.println("DATA");
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
   // email content
   espClient.println("To: " + email.recipient);
@@ -324,17 +332,18 @@ int sendAlarmEmail()
   espClient.println(".");
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
   espClient.println("QUIT");
   if (!emailResp())
   {
-    return 0;
+    return false;
   }
 
   espClient.stop();
-  return 1;
+
+  return true;
 }
 
 int emailResp()
