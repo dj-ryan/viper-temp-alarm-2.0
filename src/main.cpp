@@ -37,7 +37,7 @@ String server = "mail.smtp2go.com"; // The SMTP Server
 
 struct Button
 {
-  int PIN;
+  uint8_t PIN;
   bool pressed;
 };
 
@@ -61,7 +61,7 @@ unsigned long pressReleaseDelta = 2000; // required press time to reset in ms
 Button alarmTrigger{D3, false};
 Button alarmReset{D5, false};
 
-int ledPin = D4; // led pin number
+uint8_t ledPin = D4; // led pin number
 
 WiFiClient espClient;
 
@@ -105,6 +105,8 @@ void setup()
   pinMode(alarmTrigger.PIN, INPUT_PULLUP);
 
   pinMode(ledPin, OUTPUT);
+
+  digitalWrite(ledPin, HIGH);
 
   Serial.println("Setup compleate.");
 
