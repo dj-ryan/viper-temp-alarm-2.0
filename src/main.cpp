@@ -426,7 +426,9 @@ String getCurrentTime(String s)
     Serial.print("Current date: ");
     Serial.println(currentDate);
 
-    String currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+    Serial.println(currentTime);
+  
   }
 
   timeClient.end();
