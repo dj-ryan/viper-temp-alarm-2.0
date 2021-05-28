@@ -331,8 +331,8 @@ bool sendAlarmEmail()
   espClient.println("Triggered at: " + hardCurrentTime);
   espClient.println("Press and hold the Red Button on the Viper Temp Alarm for 3 seconds to reset it.");
   espClient.println("");
-  espClient.println("**VIPER TEMP ALARM**");
-  espClient.println("   \"Keeping your stuff cool, since 2019\"");
+  espClient.println("++VIPER TEMP ALARM++");
+  espClient.println("   ~\"Keeping you informed since 2019\"");
 
   espClient.println(".");
   if (!emailResp())
@@ -405,14 +405,28 @@ String getCurrentTime(String s)
   }
   else
   {
-
     unsigned long epochTime = timeClient.getEpochTime();
-    struct tm *ptm = gmtime((time_t *)&epochTime);
-    int monthDay = ptm->tm_mday;
-    int currentMonth = ptm->tm_mon + 1;
-    int currentYear = ptm->tm_year+1900;
 
-    String currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+    struct tm *ptm = gmtime((time_t *)&epochTime);
+
+    int monthDay = ptm->tm_mday;
+    Serial.print("Month day: ");
+    Serial.println(monthDay);
+
+    int currentMonth = ptm->tm_mon + 1;
+    Serial.print("Month: ");
+    Serial.println(currentMonth);
+
+    int currentYear = ptm->tm_year + 1900;
+    Serial.print("Year: ");
+    Serial.println(currentYear);
+
+    //Print complete date:
+    String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
+    Serial.print("Current date: ");
+    Serial.println(currentDate);
+
+    String currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   }
 
   timeClient.end();
