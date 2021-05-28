@@ -15,6 +15,7 @@
 
 const long utcOffsetInSeconds = -18000; // utc offset
 
+// to get day of week from number
 String daysOfTheWeek[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 // network info
@@ -147,6 +148,7 @@ void loop()
     if (debugInfo)
     {
       Serial.println("Email sent: " + BoolToString(error));
+      Serial.println("Current time: " + getCurrentTime("hard"));
     }
 
     disconnectFromWifi(); // disconnect from network
@@ -327,12 +329,12 @@ bool sendAlarmEmail()
   String subject = "Subject: Viper Alarm Triggered on " + softCurrentTime + "\r\n";
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
+  espClient.println("Triggered: " + hardCurrentTime);
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
-  espClient.println("Triggered at: " + hardCurrentTime);
-  espClient.println("Press and hold the Red Button on the Viper Temp Alarm for 3 seconds to reset it.");
+  espClient.println("TO RESET: Press and hold the Red Button on the Viper Temp Alarm for 3 seconds.");
   espClient.println("");
-  espClient.println("++VIPER TEMP ALARM++");
-  espClient.println("   ~\"Keeping you informed since 2019\"");
+  espClient.println("+<<VIPER TEMP ALARM>>+");
+  espClient.println("       ~ Keeping you informed since 2019");
 
   espClient.println(".");
   if (!emailResp())
@@ -410,25 +412,10 @@ String getCurrentTime(String s)
     struct tm *ptm = gmtime((time_t *)&epochTime);
 
     int monthDay = ptm->tm_mday;
-    Serial.print("Month day: ");
-    Serial.println(monthDay);
-
     int currentMonth = ptm->tm_mon + 1;
-    Serial.print("Month: ");
-    Serial.println(currentMonth);
-
     int currentYear = ptm->tm_year + 1900;
-    Serial.print("Year: ");
-    Serial.println(currentYear);
 
-    //Print complete date:
-    String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
-    Serial.print("Current date: ");
-    Serial.println(currentDate);
-
-    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
-    Serial.println(currentTime);
-  
+    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();  
   }
 
   timeClient.end();
