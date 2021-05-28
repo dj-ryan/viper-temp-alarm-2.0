@@ -54,20 +54,6 @@ Polarities on Led are switched to allow greater current draw.
 
 ## Account information:
 
-const String ssid = "VirtualIncision-Internal";
-const String networkPassword = "R0b0tsCutY0u";
-
-// email recipient account info
-const String recipientEmail = "vipermtempalarm@gmail.com";
-const String recipientEmailPassword = "";
-
-// smtp account info
-const String smtpUserName = "vipermtempalarmsender@gmail.com";
-const String smtpPassword = "PNiXugnd0cYt";
-
-// email sender account info
-const String senderEmail = "vipermtempalarmsender@gmail.com";
-const String senderEmailPassword = "XXaJQnV2t3utL7bu";
 
 ## Rebuild and edit this project
 
