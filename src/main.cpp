@@ -8,10 +8,13 @@
 
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>
-#include <base64.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
+#include <ESP8266WiFi.h> // wifi lib
+#include <WiFiUdp.h> // time server lib
+
+#include <base64.h> // base 64 conversion lib
+#include <NTPClient.h> // time server lib
+
+
 
 const long utcOffsetInSeconds = -18000; // utc offset
 
@@ -59,6 +62,8 @@ unsigned long pressTime = 0; // time of current press
 
 unsigned long pressReleaseDelta = 2000; // required press time to reset in ms
 
+uint8_t checkDelta = 1000;
+
 // button declarations
 Button alarmTrigger{D3, false};
 Button alarmReset{D5, false};
@@ -87,9 +92,9 @@ void IRAM_ATTR isr()
 }
 
 // function prototypes
-void connectToWifi();
+int connectToWifi();
 int emailResp();
-bool sendAlarmEmail();
+int sendAlarmEmail();
 String getCurrentTime(String s);
 void disconnectFromWifi();
 inline const String BoolToString(bool b);
@@ -114,7 +119,7 @@ void setup()
 
   pinMode(ledPin, OUTPUT);
 
-  digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin, HIGH); // output is inverted
 
   if (debugInfo)
   {
@@ -124,7 +129,7 @@ void setup()
 
 void loop()
 {
-  delay(1000); // delay to check
+  delay(checkDelta); // delay to check
 
   if (debugInfo)
   {
@@ -141,13 +146,36 @@ void loop()
 
     alarmActive = true;
 
-    connectToWifi(); // establish network connection
+    int wifiError = connectToWifi(); // establish network connection
 
-    bool error = sendAlarmEmail(); // send formated email with current time
+    if(debugInfo){
+      String printWifiError = "WiFi retrun: " + String(wifiError);
+      Serial.println(printWifiError);
+      /**
+       * 2 - Error: connection unsuccessful after 5 attempts
+       * 1 - Connection successful
+       */
+    }
+
+    int emailError = sendAlarmEmail(); // send formated email with current time
 
     if (debugInfo)
     {
-      Serial.println("Email sent: " + BoolToString(error));
+      String printEmailError = "Email return: " + String(emailError);
+      Serial.println(printEmailError);
+      /**
+       * 2 - Error: failed to connect to server
+       * 3 - Error: failed to greet server
+       * 4 - Error: failed to begin authentication
+       * 5 - Error: failed to encode username
+       * 6 - Error: failed to encode password
+       * 7 - Error: failed to enter sender
+       * 8 - Error: failed to enter recipient
+       * 9 - Error: failed to start email
+       * 10 - Error: failed to end email
+       * 11 - Error: failed to quit server
+       * 1 - Email successfully sent
+       */
       Serial.println("Current time: " + getCurrentTime("hard"));
     }
 
@@ -193,7 +221,7 @@ void loop()
   }
 }
 
-void connectToWifi()
+int connectToWifi()
 {
   // attempt a connection at least 5 times
   for (uint8_t attempts = 0; attempts <= 5; attempts++)
@@ -214,21 +242,21 @@ void connectToWifi()
       if (WiFi.status() == WL_CONNECTED)
       {
         // break both loops
-        Serial.println();
-        i = 100;
-        attempts = 100;
         if (debugInfo)
         {
+          Serial.println();
           Serial.println("Wifi connection successfull");
         }
+        return 1;
       }
     }
     if (debugInfo)
     {
       Serial.println();
     }
-    delay(1500);
+    delay(2000);
   }
+  return 2;
 }
 
 void disconnectFromWifi()
@@ -241,7 +269,7 @@ void disconnectFromWifi()
 }
 
 // send an email using SMTP
-bool sendAlarmEmail()
+int sendAlarmEmail()
 {
 
   Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail}; // email struct
@@ -260,19 +288,19 @@ bool sendAlarmEmail()
     {
       Serial.println("connection to SMTP server failed");
     }
-    return false;
+    return 2;
   }
 
   if (!emailResp())
   {
-    return false;
+    return 2;
   }
 
   espClient.println("EHLO");
 
   if (!emailResp())
   {
-    return false;
+    return 3;
   }
 
   // only use if STARTTLS network security is used
@@ -286,39 +314,39 @@ bool sendAlarmEmail()
 
   if (!emailResp())
   {
-    return false;
+    return 4;
   }
 
   espClient.println(base64::encode(email.smtpUserName)); //base64, ASCII encoded Username
 
   if (!emailResp())
   {
-    return false;
+    return 5;
   }
 
   espClient.println(base64::encode(email.smtpPassword)); //base64, ASCII encoded Password
 
   if (!emailResp())
   {
-    return false;
+    return 6;
   }
 
   String from = "MAIL From: " + email.sender;
   espClient.println(from);
   if (!emailResp())
   {
-    return false;
+    return 7;
   }
   String to = "RCPT To: " + email.recipient;
   espClient.println(to);
   if (!emailResp())
-    return false;
+    return 8;
 
   // sending data
   espClient.println("DATA");
   if (!emailResp())
   {
-    return false;
+    return 9;
   }
 
   // email content
@@ -332,25 +360,25 @@ bool sendAlarmEmail()
   espClient.println("Triggered: " + hardCurrentTime);
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
   espClient.println("TO RESET: Press and hold the Red Button on the Viper Temp Alarm for 3 seconds.");
-  espClient.println("");
-  espClient.println("+<<VIPER TEMP ALARM>>+");
-  espClient.println("       ~ Keeping you informed since 2019");
+  // espClient.println("");
+  // espClient.println("+<<VIPER TEMP ALARM>>+");
+  // espClient.println("       ~ Keeping you informed since 2019");
 
   espClient.println(".");
   if (!emailResp())
   {
-    return false;
+    return 8;
   }
 
   espClient.println("QUIT");
   if (!emailResp())
   {
-    return false;
+    return 11;
   }
 
   espClient.stop();
 
-  return true;
+  return 1;
 }
 
 int emailResp()

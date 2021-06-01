@@ -35,6 +35,8 @@ If the system is tripped an email should be sent to the desired addresses and th
 
 To deactivate the alarm press and hold the Red button for 3 seconds. The LED should flash rapidly for a few seconds and then turn solid and finally turn off. This indicates that the alarm has been deactivated and it will again begin checking the Trigger pin. 
 
+If the system seems to be unresponsive or in an error state are hard reset by power cycling it will return all values back to their original state and reset the system.
+
 ## Wiring information
 
 - Red button
