@@ -384,7 +384,7 @@ int emailResp()
 {
   byte responseCode;
   byte readByte;
-  uint8_t loopCount = 0;
+  uint16_t loopCount = 0;
 
   while (!espClient.available())
   {
@@ -424,33 +424,23 @@ String getCurrentTime(String s)
 
   timeClient.begin();
 
-  timeClient.update();
+  timeClient.update(); // get current time
 
   String currentTime;
 
   if (s == "s" || s == "soft" || s == "Soft" || s == "SOFT")
   {
-    currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+    currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); // construct soft string for time
   }
   else
   {
     unsigned long epochTime = timeClient.getEpochTime();
 
-    // struct tm *ptm = gmtime((time_t *)&epochTime); // struct tm * gmtime (const time_t * timer);
+    struct tm *timeinfo; // time struct
 
-    // int monthDay = ptm->tm_mday;
-    // int currentMonth = ptm->tm_mon + 1;
-    // int currentYear = ptm->tm_year + 1900;
+    timeinfo = localtime((time_t *)&epochTime); // calculate local time from epoch
 
-    // currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
-
-      //time_t rawtime;
-      struct tm * timeinfo;
-      //time (&rawtime);
-      //time ((time_t *)&epochTime);
-      //timeinfo = localtime (&rawtime);
-      timeinfo = localtime ((time_t *)&epochTime);
-      currentTime = asctime(timeinfo);
+    currentTime = asctime(timeinfo); // convert to string
   }
 
   timeClient.end();
