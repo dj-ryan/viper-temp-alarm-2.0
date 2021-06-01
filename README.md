@@ -59,7 +59,7 @@ Polarities on Led are switched to allow greater current draw.
 
 This project must me built as a PlatformIO project.
 - Install VS Code and PlatformIO extension
-- Locate PlatformIO project folder and clone this git repo into it
+- Open the project using PlatformIO
 - Install 2 library dependencies using PIO 
     - densaugeo/base64@^1.2.0
 	- arduino-libraries/NTPClient@^3.1.0
@@ -67,8 +67,5 @@ review the paltformio.ini file for further information
 
 ## Ownership and contact
 
-This software and belongs to Virtual Incision Corporation
-Last Modified: 5/27/2021
-Author: David Ryan
-   E: davidryn6@gmail.com
-   C: (402)-499-8715
+This software and belongs to Virtual Incision Corporation | Last Modified: 6/1/2021 | 
+Author: David Ryan E: davidryn6@gmail.com C: (402)-499-8715

@@ -68,7 +68,7 @@ uint8_t ledPin = D4; // led pin number
 WiFiClient espClient;
 
 // Interupt Service Routine
-void ICACHE_RAM_ATTR isr()
+void IRAM_ATTR isr()
 {
   alarmReset.pressed = !alarmReset.pressed;
 
