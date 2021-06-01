@@ -60,7 +60,7 @@ unsigned long pressTime = 0; // time of current press
 
 unsigned long pressReleaseDelta = 2000; // required press time to reset in ms
 
-uint8_t checkDelta = 1000;
+uint16_t checkDelta = 1000;
 
 // button declarations
 Button alarmTrigger{D3, false};
@@ -444,10 +444,10 @@ String getCurrentTime(String s)
 
     // currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
 
-      time_t rawtime;
+      //time_t rawtime;
       struct tm * timeinfo;
       //time (&rawtime);
-      time ((time_t *)&epochTime);
+      //time ((time_t *)&epochTime);
       //timeinfo = localtime (&rawtime);
       timeinfo = localtime ((time_t *)&epochTime);
       currentTime = asctime(timeinfo);
