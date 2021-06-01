@@ -436,13 +436,22 @@ String getCurrentTime(String s)
   {
     unsigned long epochTime = timeClient.getEpochTime();
 
-    struct tm *ptm = gmtime((time_t *)&epochTime);
+    // struct tm *ptm = gmtime((time_t *)&epochTime); // struct tm * gmtime (const time_t * timer);
 
-    int monthDay = ptm->tm_mday;
-    int currentMonth = ptm->tm_mon + 1;
-    int currentYear = ptm->tm_year + 1900;
+    // int monthDay = ptm->tm_mday;
+    // int currentMonth = ptm->tm_mon + 1;
+    // int currentYear = ptm->tm_year + 1900;
 
-    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+    // currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+
+      time_t rawtime;
+      struct tm * timeinfo;
+
+      time (&rawtime);
+      timeinfo = localtime (&rawtime);
+
+      currentTime = asctime(timeinfo);
+
   }
 
   timeClient.end();
