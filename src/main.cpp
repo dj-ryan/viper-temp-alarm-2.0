@@ -446,12 +446,11 @@ String getCurrentTime(String s)
 
       time_t rawtime;
       struct tm * timeinfo;
-
-      time (&rawtime);
-      timeinfo = localtime (&rawtime);
-
+      //time (&rawtime);
+      time ((time_t *)&epochTime);
+      //timeinfo = localtime (&rawtime);
+      timeinfo = localtime ((time_t *)&epochTime);
       currentTime = asctime(timeinfo);
-
   }
 
   timeClient.end();
