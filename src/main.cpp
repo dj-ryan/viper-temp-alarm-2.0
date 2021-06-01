@@ -1,5 +1,5 @@
 // Ownership: Virtual Incision Corp
-// Last Modified: 5/28/2021
+// Last Modified: 6/1/2021
 // Author: David Ryan
 //   E: davidryn6@gmail.com
 //   C: (402)-499-8715
@@ -9,12 +9,10 @@
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h> // wifi lib
-#include <WiFiUdp.h> // time server lib
+#include <WiFiUdp.h>     // time server lib
 
-#include <base64.h> // base 64 conversion lib
+#include <base64.h>    // base 64 conversion lib
 #include <NTPClient.h> // time server lib
-
-
 
 const long utcOffsetInSeconds = -18000; // utc offset
 
@@ -148,7 +146,8 @@ void loop()
 
     int wifiError = connectToWifi(); // establish network connection
 
-    if(debugInfo){
+    if (debugInfo)
+    {
       String printWifiError = "WiFi retrun: " + String(wifiError);
       Serial.println(printWifiError);
       /**
@@ -443,7 +442,7 @@ String getCurrentTime(String s)
     int currentMonth = ptm->tm_mon + 1;
     int currentYear = ptm->tm_year + 1900;
 
-    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();  
+    currentTime = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay) + " @ " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   }
 
   timeClient.end();
