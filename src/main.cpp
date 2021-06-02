@@ -14,6 +14,8 @@
 #include <base64.h>    // base 64 conversion lib
 #include <NTPClient.h> // time server lib
 
+#include <time.h>
+
 const long utcOffsetInSeconds = -18000; // utc offset
 
 // to get day of week from number
@@ -54,13 +56,15 @@ struct Email
 
 bool alarmActive = false; // system state
 
-bool debugInfo = 1; // debug info to Serial Monitor
+bool debugInfo = false; // debug info to Serial Monitor
 
 unsigned long pressTime = 0; // time of current press
 
-unsigned long pressReleaseDelta = 2000; // required press time to reset in ms
+unsigned long pressReleaseDelta = 1000; // required press time to reset in ms
 
-uint16_t checkDelta = 1000;
+uint16_t checkDelta = 1000; // loop time delay
+
+uint16_t smtpPort = 2525;
 
 // button declarations
 Button alarmTrigger{D3, false};
@@ -91,15 +95,14 @@ void IRAM_ATTR isr()
 
 // function prototypes
 int connectToWifi();
+void disconnectFromWifi();
 int emailResp();
 int sendAlarmEmail();
 String getCurrentTime(String s);
-void disconnectFromWifi();
 inline const String BoolToString(bool b);
 
 void setup()
 {
-
   if (debugInfo)
   {
     Serial.begin(9600);
@@ -139,10 +142,13 @@ void loop()
 
     if (debugInfo)
     {
+      Serial.println();
       Serial.println("ALARM TRIPPED!!!");
     }
 
     alarmActive = true;
+
+    digitalWrite(ledPin, LOW);
 
     int wifiError = connectToWifi(); // establish network connection
 
@@ -173,12 +179,13 @@ void loop()
        * 9 - Error: failed to start email
        * 10 - Error: failed to end email
        * 11 - Error: failed to quit server
+       * 12 - Error: failed to authenticate STARTTLS security 
        * 1 - Email successfully sent
        */
       Serial.println("Current time: " + getCurrentTime("hard"));
     }
 
-    disconnectFromWifi(); // disconnect from network
+    //disconnectFromWifi(); // disconnect from network
 
     // blink light wait for isr
     while (alarmActive == true)
@@ -238,13 +245,16 @@ int connectToWifi()
         Serial.print(".");
       }
       // wait for connection to be established
+
       if (WiFi.status() == WL_CONNECTED)
       {
         // break both loops
         if (debugInfo)
         {
-          Serial.println();
+          Serial.println(); // WiFi connection output
           Serial.println("Wifi connection successfull");
+          Serial.println("IP address: ");
+          Serial.println(WiFi.localIP());
         }
         return 1;
       }
@@ -273,7 +283,7 @@ int sendAlarmEmail()
 
   Email email{smtpUserName, smtpPassword, senderEmail, senderEmailPassword, recipientEmail}; // email struct
 
-  if (espClient.connect(server, 2525) == 1) // attempt connection to server
+  if (espClient.connect(server, smtpPort) == 1) // attempt connection to server
   {
     if (debugInfo)
     {
@@ -306,7 +316,7 @@ int sendAlarmEmail()
   /*
   espClient.println("STARTTLS");
   if (!emailResp()) 
-  return 0;
+  return 12;
   */
 
   espClient.println("AUTH LOGIN");
@@ -357,11 +367,11 @@ int sendAlarmEmail()
   espClient.println(subject);
   espClient.println("THE VIPER TEMP ALARM HAS BEEN TRIGGERED!!!");
   espClient.println("Triggered: " + hardCurrentTime);
+  espClient.println();
   espClient.println("A data dump is required from the INVENTORY TEMPERATURE MONITORING SYSTEM.");
-  espClient.println("TO RESET: Press and hold the Red Button on the Viper Temp Alarm for 3 seconds.");
-  // espClient.println("");
-  // espClient.println("+<<VIPER TEMP ALARM>>+");
-  // espClient.println("       ~ Keeping you informed since 2019");
+  espClient.println("OM-THA2-U Temperature/Humidity/Dew-point Alarm (120-000060-001)");
+  espClient.println();
+  espClient.println("TO RESET: Press and hold the Red Button on the Viper Temp Alarm for 2 seconds and then release.");
 
   espClient.println(".");
   if (!emailResp())
@@ -420,7 +430,7 @@ int emailResp()
 String getCurrentTime(String s)
 {
   WiFiUDP ntpUDP;
-  NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+  NTPClient timeClient(ntpUDP, "us.pool.ntp.org", utcOffsetInSeconds);
 
   timeClient.begin();
 
@@ -428,19 +438,28 @@ String getCurrentTime(String s)
 
   String currentTime;
 
+
+
+    time_t rawtime = timeClient.getEpochTime();
+    struct tm ts;
+    char buf[80];
+
+    ts = *localtime(&rawtime);
+
+
   if (s == "s" || s == "soft" || s == "Soft" || s == "SOFT")
   {
-    currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); // construct soft string for time
+
+    strftime(buf, sizeof(buf), "%A, %r", &ts);
+    currentTime = buf;
+
+    // alternate date format for soft version
+    //currentTime = daysOfTheWeek[timeClient.getDay()] + ", " + timeClient.getFormattedTime(); // construct soft string for time
   }
   else
   {
-    unsigned long epochTime = timeClient.getEpochTime();
-
-    struct tm *timeinfo; // time struct
-
-    timeinfo = localtime((time_t *)&epochTime); // calculate local time from epoch
-
-    currentTime = asctime(timeinfo); // convert to string
+    strftime(buf, sizeof(buf), "%c", &ts);
+    currentTime = buf; // convert to string
   }
 
   timeClient.end();
