@@ -22,20 +22,20 @@ const long utcOffsetInSeconds = -18000; // utc offset
 String daysOfTheWeek[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 // network info
-const String ssid = "VirtualIncision-Internal";
-const String networkPassword = "R0b0tsCutY0u";
+const String ssid = "";
+const String networkPassword = "";
 
 // email recipient account info
-const String recipientEmail = "vipermtempalarm@gmail.com";
+const String recipientEmail = "";
 const String recipientEmailPassword = ""; // not used
 
 // smtp account info
-const String smtpUserName = "vipermtempalarmsender@gmail.com";
-const String smtpPassword = "2gLg3vELCUYSbLHR";
+const String smtpUserName = "";
+const String smtpPassword = "";
 
 // email sender account info
-const String senderEmail = "vipermtempalarmsender@gmail.com";
-const String senderEmailPassword = "47LnE6eyJW9W9Kmh";
+const String senderEmail = "";
+const String senderEmailPassword = "";
 
 String server = "mail.smtp2go.com"; // The SMTP Server
 
